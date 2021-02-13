@@ -1,0 +1,30 @@
+{
+  "name": "orio.db",
+  "version": "1.0.0",
+  "description": "Orio Database module.",
+  "main": "index.js",
+  "scripts": {
+    "test": "node index.js"
+  },
+  "dependencies": {
+    "deasync": "^0.1.21",
+    "level": "^6.0.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SherlockYigit/orio.db.git"
+  },
+  "keywords": [
+    "orio.db",
+    "orio",
+    "database",
+    "level",
+    "oriodb"
+  ],
+  "author": "SherlockYigit",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/SherlockYigit/orio.db/issues"
+  },
+  "homepage": "https://github.com/SherlockYigit/orio.db#readme"
+}
