@@ -1,4 +1,4 @@
-# orio.db (1.0.0)
+# orio.db (1.0.1)
 ![Download](https://img.shields.io/npm/dt/orio.db.svg?style=flat-square) 
 ![NpmStats](https://nodei.co/npm/orio.db.png?downloads=true&stars=true)
 

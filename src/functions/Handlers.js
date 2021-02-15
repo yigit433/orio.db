@@ -79,19 +79,33 @@ module.exports = {
   arrFilter(array, filter) {
     if (!array || !Array.isArray(array) || !filter || Array.isArray(filter)) return;
     filter = typeof filter == "object" ? Object.entries(filter) : filter;
-    let nArr = array;
+    let output = [];
     
-    if (Array.isArray(filter)) nArr = (
-      array.filter((val) => (
-        !filter.some((_val) => val[_val[0]] == _val[1])
-      ))
-    ); 
-    else nArr = (
-      array.filter((val) => (
-        val != filter
-      ))
-    ); 
+    if (Array.isArray(filter)) {
+      output = array.map((val, i) => {
+        if (typeof val != "object" || Array.isArray(val)) return {};
+        
+        return { 
+          target: val, 
+          is: (
+            filter.map((_val) => val[_val[0]] == _val[1])
+          ),
+          index: i 
+        }
+      });
+      
+      output = output.filter((val) => {
+        if (val.hasOwnProperty("is")) return (
+          val.is.length == val.is.filter((_val) => _val).length
+        );
+        else val;
+      }).flat();
+      
+      output = array.filter((val, i) => {
+        return !output.some((_val) => _val.index == i)
+      });
+    } else output = array.filter((val) => val != filter);
     
-    return nArr;
+    return output;
   }
 };

@@ -22,22 +22,37 @@ class orioDB extends EventEmitter {
     let defOptions = { databaseName: "myDatabase", deleteEmptyArray: false };
     
     this.db = db;
-    this.options = Object.assign(typeof options == "object" && !Array.isArray(options) ? options : {}, defOptions);
+    this.options = Object.assign(defOptions, typeof options == "object" && !Array.isArray(options) ? options : {});
   }
   /**
+   * @param {string} key 
    * You fetch all the data saved in the database.
    * @returns {array} 
    */
-  all() {
-    return Deasync(async function(altDb, callback) {
+  all(tableKey) {
+    return Deasync(async function(altDb, altTableKey, callback) {
       let obj = [];
       
       altDb.createReadStream()
-      .on('data', (data) => obj.push({ KEY: data.key.toString("utf8"), DATA: dataConverter(data.value.toString("utf8")) })) 
+      .on('data', (data) => obj.push({ ID: data.key.toString("utf8"), data: dataConverter(data.value.toString("utf8")) })) 
       .on('error', (err) => callback(null, []))
-      .on('end', () => callback(null, obj))
+      .on('end', () => {
+        if (altTableKey) obj = (
+          obj.some(({ ID, data }) => ID == altTableKey)
+          ?
+          obj.filter(({ ID }) => ID == altTableKey).map(({ data }) => (
+            typeof data == "object" ? (
+              Array.isArray(data) ? data : Object.entries(data).map((val) => ({ [val[0]]: val[1] }))
+            ) : data
+          )).flat()
+          : 
+          obj
+        );
+        
+        return callback(null, obj);
+      });
       
-    })(this.db)
+    })(this.db, tableKey)
   }
   /**
    * You delete all the data in the database.
@@ -149,10 +164,12 @@ class orioDB extends EventEmitter {
   unpush(key, value) {
     if (!key) throw new TypeError("Enter a key to save data!");
     if (!value) throw new TypeError("Enter a data to save data!");
+    if (!this.has(key)) return undefined;
     
     let data = this.get(key) == undefined ? [] : this.get(key);
     if (!Array.isArray(data)) throw new Error("This old data must be an Array!");
     data = arrFilter(data, value);
+    
     if (data.length == 0 && this.options.deleteEmptyArray == true) return this.delete(key);  
     
     return this.set(key, data);
