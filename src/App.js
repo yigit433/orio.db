@@ -1,241 +1,277 @@
-const Level = require("level");
-const { dataConverter, childSet, childGet, childDelete, arrFilter } = require('./functions/Handlers');
-const Deasync = require("deasync");
-const { EventEmitter } = require("events");
+const { arrFindByValue } = require("./util/Handlers");
+const dbManager = require("./util/dbManager");
+const defOptions = {
+  adapter: "json",
+  name: "database",
+  path: "oriodb",
+  deleteEmptyArray: true
+};
 
-let db;
-
-/**
- * @class
- * @description Orio Database
- * @extends EventEmitter
- */
-class orioDB extends EventEmitter {
+module.exports = ({
   /**
-   * @constructor
-   * @param {any} databaseName You can set the database name as desired. If you leave it blank, the database name will be "database".
-   */
-  constructor(options = { databaseName: "myDatabase", deleteEmptyArray: false }) {
-    super();
-    if (db == undefined) db = (Level(options.databaseName.length == 0 ? "myDatabase" : options.databaseName));
-    
-    let defOptions = { databaseName: "myDatabase", deleteEmptyArray: false };
-    
-    this.db = db;
-    this.options = Object.assign(defOptions, typeof options == "object" && !Array.isArray(options) ? options : {});
-  }
+   * Data saving function.
+   * @returns {Array}
+   * @example <db>.all();
+  */
+  all() {
+    return dbManager(defOptions.adapter).all(defOptions.path, defOptions.name);
+  },
   /**
-   * @param {string} key 
-   * You fetch all the data saved in the database.
-   * @returns {array} 
-   */
-  all(tableKey) {
-    return Deasync(async function(altDb, altTableKey, callback) {
-      let obj = [];
-      
-      altDb.createReadStream()
-      .on('data', (data) => obj.push({ ID: data.key.toString("utf8"), data: dataConverter(data.value.toString("utf8")) })) 
-      .on('error', (err) => callback(null, []))
-      .on('end', () => {
-        if (altTableKey) obj = (
-          obj.some(({ ID, data }) => ID == altTableKey)
-          ?
-          obj.filter(({ ID }) => ID == altTableKey).map(({ data }) => (
-            typeof data == "object" ? (
-              Array.isArray(data) ? data : Object.entries(data).map((val) => ({ [val[0]]: val[1] }))
-            ) : data
-          )).flat()
-          : 
-          obj
-        );
-        
-        return callback(null, obj);
-      });
-      
-    })(this.db, tableKey)
-  }
-  /**
-   * You delete all the data in the database.
-   * @returns {Boolean}
-   */
-  deleteAll() {
-    let allData = this.all();
-    if (Object.keys(allData).length == 0) return false;
-    for (let key in allData) {
-      this.delete(key);
-    }
-    return true;
-  }
-  /**
-   * Sets data in created database.
-   * @param {string} key 
-   * @param {any} value 
+   * Data saving function.
+   * @param {string} key - The key used to save data.
+   * @param {any} value - Data to be saved.
    * @returns {any}
-   * @example
-   * db.set('a.b.c', 'Test!') // Test!
+   * @example <db>.set("a", "Hello world!");
   */
   set(key, value) {
-    if (!key) throw new TypeError("Enter a key to save data!");
-    if (!value) throw new TypeError("Enter a data to save data!");
+    if (!key) throw new Error("You must spesify an key!");
+    if (!value) throw new Error("You must spesify an value!");
     
-    return Deasync((_key, _value, self, cb) => {
-      if (_key.includes(".")) {
-        const keys = _key.split(".");
-        
-        if (
-          typeof (self.get(keys[0]) || {}) != "object"
-          ||
-          Array.isArray(self.get(keys[0]) || {})
-        ) return cb("This old data must be an Object!", null);
-        
-        self.db.put(keys[0], JSON.stringify(childSet(keys, _value, self.get(keys[0]) || {})), (err) => {
-          if (err) return cb(err, null);
-          else return cb(null, self.get(keys.join(".")));
-        });
-      } else self.db.put(_key, (
-        typeof _value == "object" ?
-        JSON.stringify(_value) : _value
-      ), (err) => {
-          if (err) return cb(err, null);
-          else return cb(null, self.get(_key));
-        });
-    })(key, value, this);
-  }
+    return dbManager(defOptions.adapter).set(key, value, defOptions.path, defOptions.name);
+  },
   /**
-   * You add numbers to the created database.
-   * @param {string} key 
-   * @param {number} number 
-   * @returns {number}
-   * @example
-   * db.add('a.b.c', 1) or db.add('a.b.c', '1') // 1 
-   */
-  add(key, value) {
-    if (!key) throw new TypeError("Enter a key to save data!")
-    if (!value || isNaN(value)) throw new TypeError("The value you wrote must be a number!");
+   * Data extraction function.
+   * @param {string} key - The key that will be used to pull the data.
+   * @returns {any}
+   * @example <db>.get("a");
+  */
+  get(key) {
+    if (!key) throw new Error("You must spesify an key!");
     
-    let oldD = this.get(key) || 0;
-    if (typeof dataConverter(oldD) != "number") throw new Error("This old data must be a number!");
-    
-    return this.set(key, oldD + value);
-  }
+    return dbManager(defOptions.adapter).get(key, defOptions.path, defOptions.name);
+  },
   /**
-   * You subtract numbers to the created database.
-   * @param {string} key 
-   * @param {number} number 
-   * @returns {number}
-   * @example
-   * db.subtract('a.b.c', 1) or db.subtract('a.b.c', '1') // 1 
-   */
-  substract(key, value) {
-    if (!key) throw new TypeError("Enter a key to save data!")
-    if (!value || isNaN(value)) throw new TypeError("The value you wrote must be a number!");
-    
-    let oldD = this.get(key) || 0;
-    if (typeof dataConverter(oldD) != "number") throw new Error("This old data must be a number!");
-    
-    return this.set(key, oldD - value);
-  }
-  /**
-   * You send data to the array in the database created with the key.
-   * @param {string} key 
-   * @param {any} value 
-   * @returns {object}
-   * @example
-   * db.push('a.b.c', 'Test!') // [ 'Test!' ] 
+   * Send data to array function.
+   * @param {string} key - The key used to save data.
+   * @param {any} value - Data to be saved.
+   * @returns {Array}
+   * @example <db>.push("a", "Hello world!");
    */
   push(key, value) {
-    if (!key) throw new TypeError("Enter a key to save data!");
-    if (!value) throw new TypeError("Enter a data to save data!");
+    if (!key) throw new Error("You must spesify an key!");
+    if (!value) throw new Error("You must spesify an value!");
     
-    let data = this.get(key) == undefined ? [] : this.get(key);
-    if (!Array.isArray(data)) throw new Error("This old data must be an Array!");
-    else data.push(value);
+    let fetchedData = dbManager(defOptions.adapter).get(key, defOptions.path, defOptions.name);
+    fetchedData = fetchedData || [];
+    if (!fetchedData || !Array.isArray(fetchedData)) return undefined;
     
-    return this.set(key, data);
-  }
+    fetchedData.push(value);
+    
+    return dbManager(defOptions.adapter).set(key, fetchedData, defOptions.path, defOptions.name);
+  },
   /**
-   * You delete data to the array in the database created with the key.
-   * @param {string} key 
-   * @param {any} value 
-   * @returns {object}
-   * @example
-   * db.unpush('a.b.c', 'Test!') // [] 
+   * Function to delete data from array.
+   * @param {string} key - The key used to fetch data.
+   * @param {any} value - Data to be deleted.
+   * @returns {Array}
+   * @example <db>.unpush("a", "Hello world!");
    */
   unpush(key, value) {
-    if (!key) throw new TypeError("Enter a key to save data!");
-    if (!value) throw new TypeError("Enter a data to save data!");
-    if (!this.has(key)) return undefined;
+    if (!key) throw new Error("You must spesify an key!");
+    if (!value) throw new Error("You must spesify an value!");
     
-    let data = this.get(key) == undefined ? [] : this.get(key);
-    if (!Array.isArray(data)) throw new Error("This old data must be an Array!");
-    data = arrFilter(data, value);
+    let fetchedData = dbManager(defOptions.adapter).get(key, defOptions.path, defOptions.name);
+    if (!fetchedData || !Array.isArray(fetchedData)) return undefined;
+    else fetchedData = arrFindByValue(fetchedData, value);
     
-    if (data.length == 0 && this.options.deleteEmptyArray == true) return this.delete(key);  
+    if (fetchedData.length === 0 && defOptions.deleteEmptyArray) return dbManager(defOptions.adapter).delete(key, defOptions.path, defOptions.name);
     
-    return this.set(key, data);
-  }
+    return dbManager(defOptions.adapter).set(key, fetchedData, defOptions.path, defOptions.name);
+  },
   /**
-   * You check if there is data in the database created.
-   * @param {string} key 
-   * @returns {Boolean}
-   * @example
-   * db.has('a.b.c') // true
+   * The function of adding numbers to data that is a number.
+   * @param {string} key - The key used to save data.
+   * @param {number} value - Data to be saved.
+   * @returns {number}
+   * @example <db>.add("a", 1);
    */
-  has(key) {
-    if (!key) throw new TypeError("Enter a key to check data!");
-  
-    if (this.get(key)) return true
-    else return false
-  }
+  add(key, value) {
+    if (!key) throw new Error("You must spesify an key!");
+    if (!value) throw new Error("You must spesify an value!");
+    if (isNaN(value))
+      throw new TypeError("You must to write in number format!");
+
+    let data = dbManager(defOptions.adapter).get(key, defOptions.path, defOptions.name) || 0;
+    if (isNaN(data)) throw new Error("This old data must be a number!");
+
+    return dbManager(defOptions.adapter).set(key, data + value, defOptions.path, defOptions.name);
+  },
   /**
-   * You fetch data from the created database.
-   * @param {string} key
+   * The function of extracting numbers from data that is a number.
+   * @param {string} key - The key used to save data.
+   * @param {number} value - Data to be saved.
+   * @returns {number}
+   * @example <db>.substract("a", 1);
+   */
+  substract(key, value) {
+    if (!key) throw new Error("You must spesify an key!");
+    if (!value) throw new Error("You must spesify an value!");
+    if (isNaN(value))
+      throw new TypeError("You must to write in number format!");
+
+    let data = dbManager(defOptions.adapter).get(key, defOptions.path, defOptions.name) || 0;
+    if (isNaN(data)) throw new Error("This old data must be a number!");
+
+    return dbManager(defOptions.adapter).set(key, data - value, defOptions.path, defOptions.name);
+  },
+  /**
+   * Data delete function.
+   * @param {string} key - The key that will be used to pull the data.
    * @returns {any}
-   * @example
-   * db.get('a.b.c') // Test!
-   */
-  get(key) {
-    if (!key) throw new TypeError("Enter a key to fetch data!");
-    
-    return Deasync((_key, self, cb) => {
-      if (_key.includes(".")) {
-        const keys = _key.split(".");
-        
-        self.db.get(keys[0], (err, value) => {
-          if (err) return cb(null, null);
-          else return cb(null, childGet(keys, dataConverter(value)));
-        });
-      } else {
-        self.db.get(_key, (err, value) => {
-          if (err) return cb(null, null);
-          else return cb(null, dataConverter(value));
-        });
-      }
-    })(key, this);
-  }
-  /**
-   * You delete data from the created database.
-   * @param {string} key 
-   * @returns {Boolean}
-   * @example
-   * db.delete('a') // true
+   * @example <db>.delete("a");
    */
   delete(key) {
-    if (!key) throw new TypeError("Enter a key to delete data!");
+    if (!key) throw new Error("You must spesify an key!");
     
-    if (key.includes(".")) {
-      let keys = key.split(".");
-      let data = this.get(keys[0]);
-      if (!data) throw new TypeError("Data not found!");
-      
-      let newData = childDelete(keys, data);
-      
-      return this.set(key.split('.')[0], newData);
-    } else {
-      if (!this.has(key)) throw new TypeError("Data not found!");
-      
-      return Deasync((key, self, cb) => self.db.del(key, (err) => err ? cb(null, false) : cb(null, true)))(key, this)
-    }
+    return dbManager(defOptions.adapter).delete(key, defOptions.path, defOptions.name);
+  },
+  /**
+   * Database reset function.
+   * @param {string} key - The key that will be used to pull the data.
+   * @returns {boolean}
+   * @example <db>.deleteAll();
+  */
+  deleteAll() {
+    const data = dbManager(defOptions.adapter).all(defOptions.path, defOptions.name);
+    
+    for (let i = 0; data.length > i; i++) { dbManager(defOptions.adapter).delete(data[i], defOptions.path, defOptions.name) }
+    
+    return true;
   }
-};
-module.exports = orioDB;
+}); 
+
+module.exports.DatabaseWithOptions = ((options = defOptions) => {
+  options = Object.assign(defOptions, typeof options === "object" && !Array.isArray(options) ? options : {});
+  if (!["json", "bson", "yaml"].includes(options.adapter)) throw new Error("You must specify a valid adapter! json,yaml or bson");
+  
+  return ({
+    /**
+     * Data saving function.
+     * @returns {Array}
+     * @example <db>.all();
+    */
+    all() {
+      return dbManager(defOptions.adapter).all(defOptions.path, defOptions.name);
+    },
+    /**
+     * Data saving function.
+     * @param {string} key - The key used to save data.
+     * @param {any} value - Data to be saved.
+     * @returns {any}
+     * @example <db>.set("a", "Hello world!");
+    */
+    set(key, value) {
+      if (!key) throw new Error("You must spesify an key!");
+      if (!value) throw new Error("You must spesify an value!");
+    
+      return dbManager(options.adapter).set(key, value, options.path, options.name);
+    },
+    /**
+     * Data extraction function.
+     * @param {string} key - The key that will be used to pull the data.
+     * @returns {any}
+     * @example <db>.get("a");
+    */
+    get(key) {
+      if (!key) throw new Error("You must spesify an key!");
+    
+      return dbManager(options.adapter).get(key, options.path, options.name);
+    },
+    /**
+     * Send data to array function.
+     * @param {string} key - The key used to save data.
+     * @param {any} value - Data to be saved.
+     * @returns {Array}
+     * @example <db>.push("a", "Hello world!");
+    */
+    push(key, value) {
+      if (!key) throw new Error("You must spesify an key!");
+      if (!value) throw new Error("You must spesify an value!");
+    
+      let fetchedData = dbManager(options.adapter).get(key, options.path, options.name);
+      fetchedData = fetchedData || [];
+      if (!fetchedData || !Array.isArray(fetchedData)) return undefined;
+    
+      fetchedData.push(value);
+    
+      return dbManager(options.adapter).set(key, fetchedData, options.path, options.name);
+    },
+    /**
+     * Function to delete data from array.
+     * @param {string} key - The key used to fetch data.
+     * @param {any} value - Data to be deleted.
+     * @returns {Array}
+     * @example <db>.unpush("a", "Hello world!");
+    */
+    unpush(key, value) {
+      if (!key) throw new Error("You must spesify an key!");
+      if (!value) throw new Error("You must spesify an value!");
+    
+      let fetchedData = dbManager(options.adapter).get(key, options.path, options.name);
+      if (!fetchedData || !Array.isArray(fetchedData)) return undefined;
+      else fetchedData = arrFindByValue(fetchedData, value);
+    
+      if (fetchedData.length === 0 && options.deleteEmptyArray) return dbManager(options.adapter).delete(key, options.path, options.name);
+    
+      return dbManager(options.adapter).set(key, fetchedData, options.path, options.name);
+    },
+    /**
+     * The function of adding numbers to data that is a number.
+     * @param {string} key - The key used to save data.
+     * @param {number} value - Data to be saved.
+     * @returns {number}
+     * @example <db>.add("a", 1);
+    */
+    add(key, value) {
+      if (!key) throw new Error("You must spesify an key!");
+      if (!value) throw new Error("You must spesify an value!");
+      if (isNaN(value)) throw new TypeError("You must to write in number format!");
+
+      let data = dbManager(options.adapter).get(key, options.path, options.name) || 0;
+      if (isNaN(data)) throw new Error("This old data must be a number!");
+
+      return dbManager(options.adapter).set(key, data + value, options.path, options.name);
+    },
+    /**
+     * The function of extracting numbers from data that is a number.
+     * @param {string} key - The key used to save data.
+     * @param {number} value - Data to be saved.
+     * @returns {number}
+     * @example <db>.substract("a", 1);
+    */
+    substract(key, value) {
+      if (!key) throw new Error("You must spesify an key!");
+      if (!value) throw new Error("You must spesify an value!");
+      if (isNaN(value)) throw new TypeError("You must to write in number format!");
+
+      let data = dbManager(options.adapter).get(key, options.path, options.name) || 0;
+      if (isNaN(data)) throw new Error("This old data must be a number!");
+
+      return dbManager(options.adapter).set(key, data - value, options.path, options.name);
+    },
+    /**
+     * Data delete function.
+     * @param {string} key - The key that will be used to pull the data.
+     * @returns {any}
+     * @example <db>.delete("a");
+    */
+    delete(key) {
+      if (!key) throw new Error("You must spesify an key!");
+    
+      return dbManager(options.adapter).delete(key, options.path, options.name);
+    },
+    /**
+     * Database reset function.
+     * @param {string} key - The key that will be used to pull the data.
+     * @returns {boolean}
+     * @example <db>.deleteAll();
+    */
+    deleteAll() {
+      const data = dbManager(options.adapter).all(options.path, options.name);
+    
+      for (let i = 0; data.length > i; i++) { dbManager(options.adapter).delete(data[i], options.path, options.name) }
+    
+      return true;
+    }
+  });
+})
