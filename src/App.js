@@ -1,4 +1,4 @@
-const { arrFindByValue } = require("./util/Handlers");
+const { arrFindByValue, valueChecker } = require("./util/Handlers");
 const dbManager = require("./util/dbManager");
 const defOptions = {
   adapter: "json",
@@ -25,7 +25,7 @@ module.exports = ({
   */
   set(key, value) {
     if (!key) throw new Error("You must spesify an key!");
-    if (!value) throw new Error("You must spesify an value!");
+    if (!valueChecker(value)) throw new Error("You must spesify an value!");
     
     return dbManager(defOptions.adapter).set(key, value, defOptions.path, defOptions.name);
   },
@@ -49,7 +49,7 @@ module.exports = ({
    */
   push(key, value) {
     if (!key) throw new Error("You must spesify an key!");
-    if (!value) throw new Error("You must spesify an value!");
+    if (!valueChecker(value)) throw new Error("You must spesify an value!");
     
     let fetchedData = dbManager(defOptions.adapter).get(key, defOptions.path, defOptions.name);
     fetchedData = fetchedData || [];
@@ -68,7 +68,7 @@ module.exports = ({
    */
   unpush(key, value) {
     if (!key) throw new Error("You must spesify an key!");
-    if (!value) throw new Error("You must spesify an value!");
+    if (!valueChecker(value) || Array.isArray(value)) throw new Error("You must spesify an value!");
     
     let fetchedData = dbManager(defOptions.adapter).get(key, defOptions.path, defOptions.name);
     if (!fetchedData || !Array.isArray(fetchedData)) return undefined;
@@ -87,9 +87,8 @@ module.exports = ({
    */
   add(key, value) {
     if (!key) throw new Error("You must spesify an key!");
-    if (!value) throw new Error("You must spesify an value!");
-    if (isNaN(value))
-      throw new TypeError("You must to write in number format!");
+    if (!valueChecker(value)) throw new Error("You must spesify an value!");
+    if (isNaN(value)) throw new TypeError("You must to write in number format!");
 
     let data = dbManager(defOptions.adapter).get(key, defOptions.path, defOptions.name) || 0;
     if (isNaN(data)) throw new Error("This old data must be a number!");
@@ -105,9 +104,8 @@ module.exports = ({
    */
   substract(key, value) {
     if (!key) throw new Error("You must spesify an key!");
-    if (!value) throw new Error("You must spesify an value!");
-    if (isNaN(value))
-      throw new TypeError("You must to write in number format!");
+    if (!valueChecker(value)) throw new Error("You must spesify an value!");
+    if (isNaN(value)) throw new TypeError("You must to write in number format!");
 
     let data = dbManager(defOptions.adapter).get(key, defOptions.path, defOptions.name) || 0;
     if (isNaN(data)) throw new Error("This old data must be a number!");
@@ -162,7 +160,7 @@ module.exports.DatabaseWithOptions = ((options = defOptions) => {
     */
     set(key, value) {
       if (!key) throw new Error("You must spesify an key!");
-      if (!value) throw new Error("You must spesify an value!");
+      if (!valueChecker(value)) throw new Error("You must spesify an value!");
     
       return dbManager(options.adapter).set(key, value, options.path, options.name);
     },
@@ -186,7 +184,7 @@ module.exports.DatabaseWithOptions = ((options = defOptions) => {
     */
     push(key, value) {
       if (!key) throw new Error("You must spesify an key!");
-      if (!value) throw new Error("You must spesify an value!");
+      if (!valueChecker(value)) throw new Error("You must spesify an value!");
     
       let fetchedData = dbManager(options.adapter).get(key, options.path, options.name);
       fetchedData = fetchedData || [];
@@ -205,7 +203,7 @@ module.exports.DatabaseWithOptions = ((options = defOptions) => {
     */
     unpush(key, value) {
       if (!key) throw new Error("You must spesify an key!");
-      if (!value) throw new Error("You must spesify an value!");
+      if (!valueChecker(value) || Array.isArray(value)) throw new Error("You must spesify an value!");
     
       let fetchedData = dbManager(options.adapter).get(key, options.path, options.name);
       if (!fetchedData || !Array.isArray(fetchedData)) return undefined;
@@ -224,7 +222,7 @@ module.exports.DatabaseWithOptions = ((options = defOptions) => {
     */
     add(key, value) {
       if (!key) throw new Error("You must spesify an key!");
-      if (!value) throw new Error("You must spesify an value!");
+      if (!valueChecker(value)) throw new Error("You must spesify an value!");
       if (isNaN(value)) throw new TypeError("You must to write in number format!");
 
       let data = dbManager(options.adapter).get(key, options.path, options.name) || 0;
@@ -241,7 +239,7 @@ module.exports.DatabaseWithOptions = ((options = defOptions) => {
     */
     substract(key, value) {
       if (!key) throw new Error("You must spesify an key!");
-      if (!value) throw new Error("You must spesify an value!");
+      if (!valueChecker(value)) throw new Error("You must spesify an value!");
       if (isNaN(value)) throw new TypeError("You must to write in number format!");
 
       let data = dbManager(options.adapter).get(key, options.path, options.name) || 0;

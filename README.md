@@ -6,11 +6,8 @@
 | :--: | :--: |
 | [orio.db-docs](https://sherlockyigit.github.io/orio.db-docs) | *Soon..* |
 
-## Changelog (2.0.0)
-* As it caused performance problems, the level database was removed from the library and replaced with json, bson and yaml. 
-* The bugs in the module have been fixed. 
-* The codes have been cleared and made more understandable, more options have been added than there are. 
-* You are more free than the old versions. 
+## Changelog (2.0.0-alpha)
+* Some bugs found have been fixed. 
 
 ## Examples
 ### Using with default settings 

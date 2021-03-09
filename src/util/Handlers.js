@@ -2,39 +2,43 @@ const Bson = require("bson");
 const Yaml = require("yaml");
 
 module.exports = ({
-  baseSet(key, value, data) {
-    if (typeof data !== "object" || !value) return;
-    let output = "data";
+  baseSet(key, value, oldData) {
+    let output = "oldData";
     let nData = {};
 
-    if (typeof value === "object" && !Array.isArray(value))
-      Object.entries(value).forEach((entry, index, arr) => {
-        if (
-          (typeof entry[1] === "object" && !Array.isArray(entry[1])) ||
-          !!entry[1] || entry[1].length === 0
-        ) return;
-        
-        nData[entry[0]] = entry[1];
-      });
+    if (typeof data === "object" && !Array.isArray(value)) Object.entries(value).forEach((entry, index, arr) => {
+      if (typeof entry[1] === "object" && !Array.isArray(entry[1]) || !isNaN(entry[1]) && !entry[1] || !entry[1] || entry[1].length === 0) return;
+      
+      nData[entry[0]] = entry[1];
+    });
     else nData = value;
-    
-    for (let i = 0; key.length > i; i++) {
-      if (!eval(output).hasOwnProperty(key[i])) {
-        output += `["${key[i]}"]`;
 
+    key.forEach((_key, i, arr) => {
+      if (!eval(output).hasOwnProperty(_key)) {
+        output += `["${_key}"]`;
+        
         eval(`${output} = {}`);
-      } else output += `["${key[i]}"]`;
-
-      if (key.length - 1 == i) output += `= ${JSON.stringify(nData)}`;
-    }
-
-    eval(`${output}`);
-
-    return data;
+      } else output += `["${_key}"]`; 
+      
+      if (arr.length == i + 1) output += `= ${JSON.stringify(nData)}`;
+    });
+    
+    eval(output);
+    
+    return oldData;
   },
   baseGet(key, data) {
     if (typeof data !== "object" || Array.isArray(data)) return;
-    return key.reduce((acc, val) => acc[val], data)
+    let output = false;
+     
+    key.forEach(_key => {
+      if (data.hasOwnProperty(_key)) {
+        data = data[_key]
+        output = true;
+      } else output = false;
+    })
+    
+    return output ? data : undefined;
   },
   baseDelete(key, data) {
     let nData = "";
@@ -72,6 +76,9 @@ module.exports = ({
     
     return output;
   },
+  valueChecker(value) {
+    return ["string", "number","boolean","object"].includes(typeof value);
+  }, 
   dataConverter: {
     json: {
       parse(data) {

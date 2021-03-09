@@ -38,7 +38,7 @@ module.exports = ((adapter) => {
           fs.writeFile(`${process.cwd()}/${path}/${name}.${adapter}`, dataConverter[adapter].stringify(document), (err) => {
             if (err) throw new Error(err);
           
-            return cb(null, document[key[key.length - 1]]);
+            return cb(null, baseGet(key, document));
           })
         })
       ))()

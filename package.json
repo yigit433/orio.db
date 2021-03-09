@@ -1,6 +1,6 @@
 {
   "name": "orio.db",
-  "version": "2.0.1",
+  "version": "2.0.0-alpha",
   "description": "Orio Database module.",
   "main": "src/App.js",
   "scripts": {
