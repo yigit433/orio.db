@@ -1,20 +1,28 @@
 {
   "name": "orio.db",
-  "version": "2.0.0-alpha",
+  "version": "2.1.0",
   "description": "Orio Database module.",
-  "main": "src/App.js",
+  "main": "src/index.js",
   "scripts": {
-    "start": "node src/App.js"
+    "start": "node src/index.js"
   },
   "dependencies": {
-    "deasync": "^0.1.21",
-    "yaml": "^1.10.0",
-    "bson": "^4.2.2"
+    "bson": "^4.2.3",
+    "yaml": "^1.10.2"
   },
   "engines": {
     "node": "12.x"
   },
-  "keywords": ["orio.db", "orio", "database", "yaml", "bson", "json", "db", "oriodb"],
+  "keywords": [
+    "orio.db",
+    "orio",
+    "database",
+    "yaml",
+    "bson",
+    "json",
+    "db",
+    "oriodb"
+  ],
   "author": "SherlockYigit",
   "license": "MIT",
   "bugs": {

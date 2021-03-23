@@ -7,7 +7,9 @@ module.exports = ({
     let nData = {};
 
     if (typeof data === "object" && !Array.isArray(value)) Object.entries(value).forEach((entry, index, arr) => {
-      if (typeof entry[1] === "object" && !Array.isArray(entry[1]) || !isNaN(entry[1]) && !entry[1] || !entry[1] || entry[1].length === 0) return;
+      if (typeof entry[1] === "object" && !Array.isArray(entry[1]) || !isNaN(entry[1]) && !entry[1] || !entry[1] || entry[1].length === 0) {
+        return
+      };
       
       nData[entry[0]] = entry[1];
     });
@@ -28,14 +30,18 @@ module.exports = ({
     return oldData;
   },
   baseGet(key, data) {
-    if (typeof data !== "object" || Array.isArray(data)) return;
+    if (typeof data !== "object" || Array.isArray(data)) {
+      return;
+    };
     let output = false;
-     
+
     key.forEach(_key => {
       if (data.hasOwnProperty(_key)) {
         data = data[_key]
         output = true;
-      } else output = false;
+      } else {
+        output = false;
+      }
     })
     
     return output ? data : undefined;
@@ -54,7 +60,9 @@ module.exports = ({
     return data;
   },
   arrFindByValue(arr, filt) {
-    if (!arr || !Array.isArray(arr) || !filt || Array.isArray(filt)) return;
+    if (!arr || !Array.isArray(arr) || !filt || Array.isArray(filt)) {
+      return;
+    };
     filt = typeof filt === "object" && !Array.isArray(filt) ? Object.entries(filt) : filt;
     let output;
     

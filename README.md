@@ -1,13 +1,12 @@
 # Orio.db 
-![Download](https://img.shields.io/npm/dt/orio.db.svg?style=flat-square) 
+![Download](https://img.shields.io/npm/dt/orio.db.svg?style=flat-square)
+![Quality](https://api.codacy.com/project/badge/Grade/9d3535f52e7b4bce8f70c761a27b0602)
 [Orio.db](https://github.com/SherlockYigit/orio.db) is an open source project. It means being open source, you can contribute to its development yourself. 
-
 | Documentation | Developer blog |
 | :--: | :--: |
 | [orio.db-docs](https://sherlockyigit.github.io/orio.db-docs) | *Soon..* |
-
-## Changelog (2.0.0-alpha)
-* Some bugs found have been fixed. 
+## Changelog (2.1.0)
+* Some bugs and errors were fixed. 
 
 ## Examples
 ### Using with default settings 
@@ -62,13 +61,14 @@ db.deleteAll();
 ```
 ### Using with adjustable settings 
 ```js
-let db, { DatabaseWithOptions } = require("orio.db");
-db = DatabaseWithOptions({
+let db = require("orio.db");
+
+db.setOptions({
   adapter: "json",
   name: "database",
   path: "oriodb",
   deleteEmptyArray: true
-});
+}); // It's enough to use once. 
 
 // You fetch all the data saved in the database.
 db.all();
