@@ -41,7 +41,7 @@ module.exports = {
     }
     let output = false;
 
-    key.forEach(_key => {
+    key.forEach((_key) => {
       if (data.hasOwnProperty(_key)) {
         data = data[_key];
         output = true;
@@ -55,7 +55,7 @@ module.exports = {
   baseDelete(key, data) {
     let nData = "";
 
-    key.forEach(_key => {
+    key.forEach((_key) => {
       if (nData.length === 0) nData += "delete data";
 
       nData += `["${_key}"]`;
@@ -81,24 +81,22 @@ module.exports = {
 
         return {
           target: val,
-          matches: filt.map(_val => val[_val[0]] === _val[1]),
-          index: i
+          matches: filt.map((_val) => val[_val[0]] === _val[1]),
+          index: i,
         };
       });
 
       output = output.filter((val) => val !== undefined);
-      output = (
-        output.some(
-          (val) => val.matches.filter(_val => _val).length === val.matches.length
-        )
-        ?
-        output.filter(
-          (val) => val.matches.filter(_val => _val).length === val.matches.length
-        )
-        : 
-        output
-      );
-      output = arr.filter((val, i) => output.some(_val => _val.index != i));
+      output = output.some(
+        (val) =>
+          val.matches.filter((_val) => _val).length === val.matches.length
+      )
+        ? output.filter(
+            (val) =>
+              val.matches.filter((_val) => _val).length === val.matches.length
+          )
+        : output;
+      output = arr.filter((val, i) => output.some((_val) => _val.index != i));
     } else output = arr.filter((val) => val !== filt);
 
     return output;
@@ -129,7 +127,7 @@ module.exports = {
         }
 
         return output;
-      }
+      },
     },
     yaml: {
       parse(data) {
@@ -153,7 +151,7 @@ module.exports = {
         }
 
         return output;
-      }
+      },
     },
     bson: {
       parse(data) {
@@ -177,7 +175,7 @@ module.exports = {
         }
 
         return output;
-      }
-    }
-  }
+      },
+    },
+  },
 };

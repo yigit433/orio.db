@@ -1,17 +1,14 @@
 {
   "name": "orio.db",
-  "version": "0.1.0",
+  "version": "3.0.0",
   "description": "Orio Database module.",
   "main": "src/index.js",
   "scripts": {
-    "start": "node src/index.js"
+    "format": "prettier --write --check './**/*.js'"
   },
   "dependencies": {
     "bson": "^4.2.3",
     "yaml": "^1.10.2"
-  },
-  "engines": {
-    "node": "12.x"
   },
   "keywords": [
     "orio.db",
@@ -28,5 +25,8 @@
   "bugs": {
     "url": "https://github.com/SherlockYigit/orio.db/issues"
   },
-  "homepage": "https://github.com/SherlockYigit/orio.db#readme"
+  "homepage": "https://github.com/SherlockYigit/orio.db#readme",
+  "devDependencies": {
+    "prettier": "^2.4.1"
+  }
 }
