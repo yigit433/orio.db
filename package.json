@@ -1,10 +1,10 @@
 {
   "name": "orio.db",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Orio Database module.",
   "main": "src/index.js",
   "scripts": {
-    "format": "prettier --write --check './**/*.js'"
+    "format": "prettier --write --check './**/*.{js,json,md}'"
   },
   "dependencies": {
     "bson": "^4.2.3",
