@@ -5,18 +5,19 @@
 | :--: | :--: |
 | https://website-yigitsh.vercel.app/ | https://yigitsh-api.herokuapp.com/ |
 
-## How to edit database configration?
+## Editing a configration
 
 The default database configuration is written to a file called `oriodb.config.json`, and you can even edit it according to the instructions below.
 
 ### Default config
 
-```json
+```js
 {
   "adapter": "json", // bson, yaml
   "name": "database", // Name of the database file
   "path": "oriodb", // The name of the folder of your database file
-  "deleteEmptyArray": true // If this option is turned on, it deletes it from the database when the number of elements of your Array data decreases to 0.
+  "deleteEmptyArray": true, // If this option is turned on, it deletes it from the database when the number of elements of your Array data decreases to 0.
+  "deleteEmptyObject": true,// If this option is turned on, it deletes it from the database when the number of keys of your Object data decreases to 0.
 }
 ```
 

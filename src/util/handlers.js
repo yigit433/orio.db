@@ -1,8 +1,24 @@
 const Bson = require("bson");
 const Yaml = require("yaml");
 
+const getMaxValue = (d) => {
+  let maxnum = Infinity * -1;
+
+  for (let ind = 0; d.length > ind; ind++) {
+    let num = d[ind];
+
+    if (num[0] >= (Array.isArray(maxnum) ? maxnum[0][0] : maxnum)) {
+      if (ind === 0) maxnum = [];
+
+      maxnum.push(num);
+    }
+  }
+
+  return maxnum;
+};
+
 module.exports = {
-  baseSet(key, value, oldData) {
+  baseSet: (key, value, oldData) => {
     let output = "oldData";
     let nData = {};
 
@@ -35,7 +51,7 @@ module.exports = {
 
     return oldData;
   },
-  baseGet(key, data) {
+  baseGet: (key, data) => {
     if (typeof data !== "object" || Array.isArray(data)) {
       return;
     }
@@ -52,7 +68,7 @@ module.exports = {
 
     return output ? data : undefined;
   },
-  baseDelete(key, data) {
+  baseDelete: (key, data) => {
     let nData = "";
 
     key.forEach((_key) => {
@@ -65,48 +81,29 @@ module.exports = {
 
     return data;
   },
-  arrFindByValue(arr, filt) {
-    if (!arr || !Array.isArray(arr) || !filt || Array.isArray(filt)) {
-      return;
-    }
-    filt =
-      typeof filt === "object" && !Array.isArray(filt)
-        ? Object.entries(filt)
-        : filt;
-    let output;
-
-    if (Array.isArray(filt)) {
-      output = arr.map((val, i) => {
-        if (typeof val !== "object" || Array.isArray(val) || !val) return;
-
-        return {
-          target: val,
-          matches: filt.map((_val) => val[_val[0]] === _val[1]),
-          index: i,
-        };
-      });
-
-      output = output.filter((val) => val !== undefined);
-      output = output.some(
-        (val) =>
-          val.matches.filter((_val) => _val).length === val.matches.length
-      )
-        ? output.filter(
-            (val) =>
-              val.matches.filter((_val) => _val).length === val.matches.length
-          )
-        : output;
-      output = arr.filter((val, i) => output.some((_val) => _val.index != i));
-    } else output = arr.filter((val) => val !== filt);
-
-    return output;
-  },
-  valueChecker(value) {
+  valueChecker: (value) => {
     return ["string", "number", "boolean", "object"].includes(typeof value);
+  },
+  findNearestData: (query, data) => {
+    const queryArr = Object.entries(query);
+    const queryResult = data.map((d) => {
+      const queryStat = queryArr.map((q) => d[q[0]] === q[1]);
+
+      return {
+        p: d,
+        t: queryStat.filter((v) => v === true).length,
+        f: queryStat.filter((v) => v === false).length,
+      };
+    });
+
+    const arr = queryResult.map((el, ind) => [el.t, ind, el.p]);
+    const max = getMaxValue(arr);
+
+    return max;
   },
   dataConverter: {
     json: {
-      parse(data) {
+      parse: (data) => {
         let output;
 
         try {
@@ -117,7 +114,7 @@ module.exports = {
 
         return output;
       },
-      stringify(data) {
+      stringify: (data) => {
         let output;
 
         try {
@@ -130,7 +127,7 @@ module.exports = {
       },
     },
     yaml: {
-      parse(data) {
+      parse: (data) => {
         let output;
 
         try {
@@ -141,7 +138,7 @@ module.exports = {
 
         return output;
       },
-      stringify(data) {
+      stringify: (data) => {
         let output;
 
         try {
@@ -154,7 +151,7 @@ module.exports = {
       },
     },
     bson: {
-      parse(data) {
+      parse: (data) => {
         let output;
 
         try {
@@ -165,7 +162,7 @@ module.exports = {
 
         return output;
       },
-      stringify(data) {
+      stringify: (data) => {
         let output;
 
         try {

@@ -1,4 +1,4 @@
-const { baseSet, baseGet, baseDelete, dataConverter } = require("./Handlers");
+const { baseSet, baseGet, baseDelete, dataConverter } = require("./handlers");
 const fs = require("fs");
 
 module.exports = (adapter = "json") => {

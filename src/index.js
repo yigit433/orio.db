@@ -1,4 +1,4 @@
-const { baseGet, arrFindByValue, valueChecker } = require("./util/Handlers");
+const { baseGet, findNearestData, valueChecker } = require("./util/handlers");
 const dbManager = require("./util/dbManager");
 const options = require("./configLoader");
 
@@ -208,7 +208,8 @@ module.exports = {
         }
 
         if (Array.isArray(data)) {
-          let result = arrFindByValue(data, value);
+          let result = findNearestData(value, data);
+          result = data.filter((d, ind) => !result.some((r) => r[1] === ind));
 
           if (result.length === 0 && options.deleteEmptyArray)
             return dbManager(options.adapter).delete(
