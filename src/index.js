@@ -185,8 +185,10 @@ module.exports = {
       if (data) {
         if (typeof data.data === "object" && !Array.isArray(data.data)) {
           data = baseGet(key, data.data);
-        } else if (!Array.isArray(data)) {
-          data = data.data;
+
+          if (!data) {
+            data = [];
+          }
         }
 
         if (Array.isArray(data)) {
