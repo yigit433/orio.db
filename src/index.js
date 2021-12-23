@@ -40,6 +40,28 @@ module.exports = {
    * @returns {any}
    * @example db.get("a");
    */
+  fetch(key) {
+    key = key.split(".");
+
+    let data = dbManager(options.adapter).all(options.path, options.name);
+    data = data.find((val) => val.ID === key[0]);
+
+    if (!data) {
+      return;
+    } else {
+      return typeof data.data === "object" && !Array.isArray(data.data)
+        ? key.length > 1
+          ? baseGet(key, data.data)
+          : data.data
+        : data.data;
+    }
+  },
+  /**
+   * Data extraction function.
+   * @param {string} key - The key that will be used to pull the data.
+   * @returns {any}
+   * @example db.get("a");
+   */
   get(key) {
     key = key.split(".");
 
