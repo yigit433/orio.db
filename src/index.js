@@ -190,6 +190,7 @@ module.exports = {
             data = [];
           }
         }
+        data = data.data || [];
 
         if (Array.isArray(data)) {
           return dbManager(options.adapter).set(

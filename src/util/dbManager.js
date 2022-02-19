@@ -80,7 +80,11 @@ module.exports = (adapter = "json") => {
             let end = false;
 
             do {
-              result = baseGet(key, document);
+              let result = baseGet(key, document);
+              if (!result) {
+                end = true;
+                continue;
+              }
               result = Object.entries(result).every((r, i) => {
                 return (
                   (JSON.stringify(r[1]) == "{}" ||
