@@ -5,6 +5,7 @@ const defOptions = {
   name: "database",
   path: "oriodb",
   deleteEmptyArray: true,
+  deleteEmptyObject: true,
 };
 
 let output;
