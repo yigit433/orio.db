@@ -74,31 +74,24 @@ module.exports = (adapter = "json") => {
         } else {
           document = baseDelete(key, document);
 
-          if (key.length > 0 && options.deleteEmptyObject) {
+          if (key.length > 1 && options.deleteEmptyObject) {
             key = key.slice(0, key.length - 1);
-            let stat = false;
             let end = false;
+            let stat = false;
 
             do {
-              let result = baseGet(key, document);
-              if (!result) {
+              let d = baseGet(key, document);
+              if (JSON.stringify(d) === "{}") {
                 end = true;
-                continue;
+              } else {
+                key = key.slice(0, key.length - 1);
               }
-              result = Object.entries(result).every((r, i) => {
-                return (
-                  (JSON.stringify(r[1]) == "{}" ||
-                    (typeof r[1] === "object" && !Array.isArray(r[1]))) &&
-                  i > 0
-                );
-              });
 
               if (
-                result &&
-                (Object.entries(result).length == 1 ||
-                  Object.entries(result).length == 0)
+                typeof d === "object" &&
+                !Array.isArray(d) &&
+                1 >= Object.keys(d).length
               ) {
-                key = key.slice(0, key.length - 1);
                 stat = true;
               } else {
                 end = true;

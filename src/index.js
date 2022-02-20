@@ -190,7 +190,6 @@ module.exports = {
             data = [];
           }
         }
-        data = data.data || [];
 
         if (Array.isArray(data)) {
           return dbManager(options.adapter).set(
@@ -236,19 +235,20 @@ module.exports = {
           let result = findNearestData(value, data);
           result = data.filter((d, ind) => !result.some((r) => r[1] === ind));
 
-          if (result.length === 0 && options.deleteEmptyArray)
+          if (result.length === 0 && options.deleteEmptyArray) {
             return dbManager(options.adapter).delete(
               key,
               options.path,
               options.name
             );
-
-          return dbManager(options.adapter).set(
-            key,
-            result,
-            options.path,
-            options.name
-          );
+          } else {
+            return dbManager(options.adapter).set(
+              key,
+              result,
+              options.path,
+              options.name
+            );
+          }
         } else {
           throw new Error("This old data must be an Array!");
         }
