@@ -183,8 +183,10 @@ module.exports = {
       data = data.find((val) => val.ID === key[0]) || [];
 
       if (data) {
-        if (typeof data.data === "object" && !Array.isArray(data.data)) {
-          data = baseGet(key, data.data);
+        data = data.data || [];
+
+        if (typeof data === "object" && !Array.isArray(data)) {
+          data = baseGet(key, data);
 
           if (!data) {
             data = [];
@@ -225,10 +227,14 @@ module.exports = {
       data = data.find((val) => val.ID === key[0]) || [];
 
       if (data) {
-        if (typeof data.data === "object" && !Array.isArray(data.data)) {
-          data = baseGet(key, data.data);
-        } else if (!Array.isArray(data)) {
-          data = data.data;
+        data = data.data || [];
+
+        if (typeof data === "object" && !Array.isArray(data)) {
+          data = baseGet(key, data);
+
+          if (!data) {
+            data = [];
+          }
         }
 
         if (Array.isArray(data)) {

@@ -1,7 +1,7 @@
 {
   "name": "orio.db",
-  "version": "3.0.8",
-  "description": "Orio Database module.",
+  "version": "3.0.9",
+  "description": "A simple JSON/Yaml/Bson database module. ",
   "main": "src/index.js",
   "scripts": {
     "format": "prettier --write --check './**/*.{js,json,md}'"
