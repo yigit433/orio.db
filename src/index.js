@@ -239,7 +239,9 @@ module.exports = {
 
         if (Array.isArray(data)) {
           let result = findNearestData(value, data);
-          result = data.filter((d, ind) => !result.some((r) => r[1] === ind));
+          result = data.filter(
+            (d, ind) => !result.some((r) => r[0] === 1 && r[1] === ind)
+          );
 
           if (result.length === 0 && options.deleteEmptyArray) {
             return dbManager(options.adapter).delete(
