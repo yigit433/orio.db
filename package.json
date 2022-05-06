@@ -1,6 +1,6 @@
 {
   "name": "orio.db",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "description": "A simple JSON/Yaml/Bson database module. ",
   "main": "src/index.js",
   "scripts": {
