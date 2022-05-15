@@ -157,7 +157,7 @@ module.exports = {
       } else {
         return dbManager(options.adapter).set(
           key,
-          value - data,
+          data - value,
           options.path,
           options.name
         );
